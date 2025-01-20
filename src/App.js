@@ -1,23 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import { ListItemAvatar, ListItemText, TextField, List, ListItem, Divider } from '@mui/material';
+import { ListItemText, TextField, List, ListItem, Divider, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
+import star from './gold_star_1_outline.png'
+import first from './icon_medal_gold.png'
+import second from './icon_medal_emerald_old.png'
+import third from './icon_medal_bronze.png'
+import cry from './cry.png'
+import EnableColorOnDarkAppBar from './AppBar';
+import Paper from '@mui/material/Paper';
+import Card from '@mui/material/Card';
 
 function App() {
-
-  const [searchDate, setSearchDate] = useState('')
-  const [playerData, setPlayerData] = useState([])
-  const [dataPerDay, setDataPerDay] = useState([])
-  const [points, setPoints] = useState(0)
   const [inputValue, setInputValue] = useState({
     clanName: "",
     date: "",
     requirement: ""
   })
-  const [members, setMembers] = useState([])
   const [scoreList, setScoreList] = useState([])
   const [redMembers, setredMembers] = useState([])
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleClanChange = (e) => {
     setInputValue( prev => ({
@@ -27,10 +31,17 @@ function App() {
   }
 
   const handleDateChange = (e) => {
+    const value = e.target.value
     setInputValue( prev => ({
       ...prev,
-      date: e.target.value
+      date: value
     }))
+    if (!validateDate(value)) {
+      setError(true)
+    }
+    else {
+      setError(false)
+    }
   }
 
   const handleRequirementChange = (e) => {
@@ -41,6 +52,7 @@ function App() {
   }
 
   const fetchTotalScores = async() => {
+    setLoading(true)
     const clan = inputValue.clanName.toLocaleLowerCase()
     const membersResponse = await fetch(`https://ps99.biggamesapi.io/api/clan/${clan}`)
     if (!membersResponse.ok) {
@@ -49,8 +61,6 @@ function App() {
     // const membersList = await membersResponse.json()
     const clanInfo = await membersResponse.json()
     const membersList = clanInfo.data.Members
-
-    setMembers(membersList)
     let scoredMembers = []
     let redMembersL = []
     for (const member of membersList) {
@@ -102,6 +112,7 @@ function App() {
     redMembersL.sort((a, b) => b.score - a.score)
     setScoreList(scoredMembers)
     setredMembers(redMembersL)
+    setLoading(false)
   }
 
 
@@ -110,8 +121,6 @@ function App() {
     const end = date + "24:00:00.000"
     const start_res = moment(start, moment.HTML5_FMT.DATETIME_LOCAL_MS, 'America/New_York').utc().format(moment.HTML5_FMT.DATETIME_LOCAL_MS) + 'Z'
     const end_res = moment(end, 'YYYY-MM-DDTHH:mm:ss.SSS', 'America/New_York').utc().format(moment.HTML5_FMT.DATETIME_LOCAL_MS) + 'Z'
-    // console.log(" check start ")
-    // console.log(start_res)
     return { start_res, end_res }
   }
 
@@ -119,86 +128,116 @@ function App() {
     const start = new Date(date.start_res)
     const end = new Date(date.end_res)
     let per_data = []
-    // let sum = 0
     data.forEach((d) => {
       const d_date = new Date(d.timestamp)
       const compare_s = d_date >= start
       const compare_e = d_date < end
-      // console.log(compare_s)
       if (compare_s && compare_e) {
-        // sum = sum + d.Points
         per_data.push(d)
       }
     })
-    // setPoints(sum)
-    // setDataPerDay(per_data)
     const minPoints = Math.min(...per_data.map(item => item.Points))
     const maxPoints = Math.max(...per_data.map(item => item.Points))
     return maxPoints - minPoints
   }
 
+  const validateDate = (value) => {
+    const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
+    if (!regex.test(value)) {
+      return false
+    }
+
+    const [year, month, day] = value.split('-').map(Number)
+    const date = new Date(year, month-1, day)
+    return (
+      date.getFullYear() === year &&
+      date.getMonth() === month -1 &&
+      date.getDate() === day
+    )
+  }
+
 
   return (
     <div className="App">
-      <div style={{ display: 'flex' }}>
+      <Card>
+      <EnableColorOnDarkAppBar />
+      <div style={{ display: 'flex', margin: '10px'}}>
         <TextField
-            sx={{ margin: '2px'}}
+            sx={{ margin: '5px'}}
             size="small"
             type="text" 
             name="clanName" 
-            placeholder="Enter Clan"
+            label="Clan Name"
+            variant="outlined"
+            disabled={loading}
             value={inputValue.clanName} 
             onChange={handleClanChange}
           />
         <TextField 
-          sx={{ margin: '2px'}}
+          sx={{ margin: '5px'}}
           size="small"
           type="text" 
           name="date" 
-          placeholder="YYYY-MM-DD"
+          label="YYYY-MM-DD"
+          variant="outlined"
+          disabled={loading}
           value={inputValue.date} 
+          error={error}
+          helperText={error ? "Invalid Date Format, Require YYYY-MM-DD" : ""}
           onChange={handleDateChange}
         />
         <TextField 
-          sx={{ margin: '2px'}}
+          sx={{ margin: '5px'}}
           size="small"
           type="text" 
           name="requirement" 
-          placeholder="Enter Daily Reuirement"
+          variant="outlined"
+          label="Daily Reuirement"
+          disabled={loading}
           value={inputValue.requirement} 
           onChange={handleRequirementChange}
         />
-        <Button variant="contained" onClick={fetchTotalScores} sx={{ margin: '2px'}}>Search</Button>
+        <Button variant="contained" onClick={fetchTotalScores} sx={{ margin: '5px'}} disabled={loading || !(inputValue.clanName && inputValue.date)}>Search</Button>
       </div>
       <div>
+        { loading && <CircularProgress sx={{ margin: '20px', size: '10rem'}}/>}
         <List sx={{ bgcolor: 'background.paper'}}>
-        { scoreList.length !== 0 && scoreList.map((member, i) => (
-          <ListItem alignItems="flex-start" key={member.id} style={{ margin: '5px', backgroundColor: member.pass ? "white" : "pink"}}>
+        { !loading && scoreList.length !== 0 && scoreList.map((member, i) => (
+          <React.Fragment key={i}>
+          <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: member.pass ? "#ededed" : "pink"}}>
+             <h4>#{i+1}&nbsp;</h4>
              <Avatar src={member.avatar} />
-             {/* {member.name} : <span>{member.score}</span> */}
              <ListItemText 
-             primary={member.name}
+             primary={<span style={{display: 'flex'}}>
+             <span>{member.name}&nbsp;</span>
+             { i===0 && <span><Avatar src={first} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { i===1 && <span><Avatar src={second} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { i===2 && <span><Avatar src={third} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             </span>}
              secondary={
-              member.score
+              <span style={{display: 'flex'}}>
+              <span><Avatar src={star} style={{ width: '16px', height: '16px'}} key={i}/></span>
+              <span>&nbsp;{member.score}</span>
+              </span>
              }
              />
-             <Divider variant="inset" component="li" />
+             {/* <Divider /> */}
           </ListItem>
+          {(scoreList.length-16===i) && <Divider>BOTTOM 15 MEMBERS</Divider>}
+          </React.Fragment>
         ))}
         </List>
       </div>
-      <div>
-
-        ================================       UnSatisfied Members      ==============================
-
-      </div>
-      <div>
-        { redMembers.length !== 0 && redMembers.map((member, i) => (
-          <div key={i} style={{ margin: '5px'}}>
-            <span>{member.name}</span>:  <span>{member.score}</span>   ========= need to grind: <span style={{ color: "red"}}> {member.diff}</span>
-          </div>
+      <Divider>UNSATISFIED MEMBERS</Divider>
+      <List sx={{ bgcolor: 'background.paper'}}>
+        {!loading &&  redMembers.length !== 0 && redMembers.map((member, i) => (
+          <ListItem key={i} style={{ margin: '5px'}}>
+            <Avatar src={cry} />
+            <span>{member.name}</span>:&nbsp;<span style={{ backgroundColor: '#ededed'}}>{member.score}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style={{ fontStyle: 'italic'}}>need to grind:</span>&nbsp;<span style={{ color: "red"}}>{member.diff}</span>
+          </ListItem>
         ))}
-      </div>
+      </List>
+      </Card>
     </div>
   );
 }
