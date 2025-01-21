@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import { ListItemText, TextField, List, ListItem, Divider, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
 import Avatar from '@mui/material/Avatar';
@@ -117,10 +117,15 @@ function App() {
 
 
   const getTimeRange = (date) => {
-    const start = date + "00:00:00.000"
-    const end = date + "24:00:00.000"
-    const start_res = moment(start, moment.HTML5_FMT.DATETIME_LOCAL_MS, 'America/New_York').utc().format(moment.HTML5_FMT.DATETIME_LOCAL_MS) + 'Z'
-    const end_res = moment(end, 'YYYY-MM-DDTHH:mm:ss.SSS', 'America/New_York').utc().format(moment.HTML5_FMT.DATETIME_LOCAL_MS) + 'Z'
+    const timeZone = 'America/New_York'
+    const now = moment()
+    const est = now.tz(timeZone)
+    const estDate = est.format('YYYY-MM-DD')
+    const search_date = estDate === date ? date : estDate  
+    const start = moment.tz(search_date, timeZone).startOf('day')
+    const end = moment.tz(search_date, timeZone).endOf('day')
+    const start_res = start.utc()
+    const end_res = end.utc()
     return { start_res, end_res }
   }
 
