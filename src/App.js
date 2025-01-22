@@ -172,11 +172,17 @@ function App() {
   }
 
   const handleSearch = (filteredItems) => {
-    setFilteredList(filteredItems)
-    
-    console.log(filteredItems)
+    if (filteredItems.length !== 0) {
+      setFilteredList(filteredItems)
+    }
+    else {
+      setFilteredList([])
+    }
+
   }
 
+  console.log("===========")
+  console.log(filteredList)
 
   return (
     <div className="App">
@@ -226,7 +232,7 @@ function App() {
       </div>
       <div>
         { loading && <CircularProgress sx={{ margin: '20px', size: '10rem'}}/>}
-        { filteredList.length !== 0 && filteredList.map((member, i) => (
+        { filteredList.length !== 0 && filteredList.length !== scoreList.length && filteredList.map((member, i) => (
           <React.Fragment key={i}>
           <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: "#b0e0e6"}}>
              <Avatar src={member.avatar} />
