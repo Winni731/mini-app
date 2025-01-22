@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment-timezone';
 import { ListItemText, TextField, List, ListItem, Divider, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -8,9 +8,10 @@ import first from './icon_medal_gold.png'
 import second from './icon_medal_emerald_old.png'
 import third from './icon_medal_bronze.png'
 import cry from './cry.png'
-import EnableColorOnDarkAppBar from './AppBar';
+// import EnableColorOnDarkAppBar from './AppBar';
 import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
+import SearchAppBar from './SearchBar';
 
 function App() {
   const [inputValue, setInputValue] = useState({
@@ -22,6 +23,14 @@ function App() {
   const [redMembers, setredMembers] = useState([])
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [clanStatus, setClanStatus] = useState({
+    place: 0,
+    totalPoints: 0,
+    dailyPoints: 0,
+    memberAvg: 0,
+    memberMeetRequriemnts: 0
+  })
+  const [filteredList, setFilteredList] = useState([])
 
   const handleClanChange = (e) => {
     setInputValue( prev => ({
@@ -58,7 +67,6 @@ function App() {
     if (!membersResponse.ok) {
       throw new Error("Failed to fetch members")
     }
-    // const membersList = await membersResponse.json()
     const clanInfo = await membersResponse.json()
     const membersList = clanInfo.data.Members
     let scoredMembers = []
@@ -118,10 +126,12 @@ function App() {
 
   const getTimeRange = (date) => {
     const timeZone = 'America/New_York'
-    const now = moment()
-    const est = now.tz(timeZone)
-    const estDate = est.format('YYYY-MM-DD')
-    const search_date = estDate === date ? date : estDate  
+    const localTZ = moment.tz.guess()
+    const localTime = moment(new Date().toLocaleTimeString(), 'hh:mm:ss A').format('HH:mm:ss')
+    const dateTime = date + ` ${localTime}`
+    const localDateTime = moment.tz(dateTime, 'YYYY-MM-DD HH:mm:ss', localTZ)
+    const ESTDateTime = localDateTime.clone().tz(timeZone)
+    const search_date = ESTDateTime.format('YYYY-MM-DD')
     const start = moment.tz(search_date, timeZone).startOf('day')
     const end = moment.tz(search_date, timeZone).endOf('day')
     const start_res = start.utc()
@@ -161,11 +171,21 @@ function App() {
     )
   }
 
+  const handleSearch = (filteredItems) => {
+    setFilteredList(filteredItems)
+    
+    console.log(filteredItems)
+  }
+
 
   return (
     <div className="App">
       <Card>
-      <EnableColorOnDarkAppBar />
+      {/* <EnableColorOnDarkAppBar /> */}
+      <SearchAppBar sx={{ display: 'flex'}}
+        list={scoreList}
+        onSearch={handleSearch}
+      />
       <div style={{ display: 'flex', margin: '10px'}}>
         <TextField
             sx={{ margin: '5px'}}
@@ -206,6 +226,29 @@ function App() {
       </div>
       <div>
         { loading && <CircularProgress sx={{ margin: '20px', size: '10rem'}}/>}
+        { filteredList.length !== 0 && filteredList.map((member, i) => (
+          <React.Fragment key={i}>
+          <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: "#b0e0e6"}}>
+             <Avatar src={member.avatar} />
+             <ListItemText 
+             primary={<span style={{display: 'flex'}}>
+             <span>{member.name}&nbsp;</span>
+             { i===0 && <span><Avatar src={first} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { i===1 && <span><Avatar src={second} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { i===2 && <span><Avatar src={third} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             </span>}
+             secondary={
+              <span style={{display: 'flex'}}>
+              <span><Avatar src={star} style={{ width: '16px', height: '16px'}} key={i}/></span>
+              <span>&nbsp;{member.score}</span>
+              </span>
+             }
+             />
+             {/* <Divider /> */}
+          </ListItem>
+          {(scoreList.length-16===i) && <Divider>BOTTOM 15 MEMBERS</Divider>}
+          </React.Fragment>
+        ))}
         <List sx={{ bgcolor: 'background.paper'}}>
         { !loading && scoreList.length !== 0 && scoreList.map((member, i) => (
           <React.Fragment key={i}>
