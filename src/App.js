@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
 import { ListItemText, TextField, List, ListItem, Divider, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -12,6 +12,8 @@ import cry from './cry.png'
 import Paper from '@mui/material/Paper';
 import Card from '@mui/material/Card';
 import SearchAppBar from './SearchBar';
+import Box from '@mui/material/Box';
+import Grid from '@mui/material/Grid2';
 
 function App() {
   const [inputValue, setInputValue] = useState({
@@ -24,6 +26,8 @@ function App() {
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(false)
   const [clanStatus, setClanStatus] = useState({
+    name: '',
+    battle: '',
     place: 0,
     totalPoints: 0,
     dailyPoints: 0,
@@ -71,57 +75,86 @@ function App() {
     const membersList = clanInfo.data.Members
     let scoredMembers = []
     let redMembersL = []
-    for (const member of membersList) {
-      try {
-        const scoreResponse = await fetch(`https://api.petsimulatorclans.com/${clan}/${member.UserID}`)
-        if (!scoreResponse.ok) {
-          console.log(" cannot fetch member: " + member.UserID)
-          throw new Error("Failed to fetch member data")
-        }
-        const scoreData = await scoreResponse.json()
-        const date_range = getTimeRange(inputValue.date)
-        const score = getOneDayData(date_range, scoreData)
-        const meet = score - inputValue.requirement >= 0
-        const diff = inputValue.requirement - score
-        const userNameResponse = await fetch(`https://robloxproxy.andreybusinessacc6675.workers.dev/proxy/user/?userID=${member.UserID}`)
-        if (!userNameResponse.ok) {
-          console.log(" cannot find username with id: " + member.UserID)
-          throw new Error("Failed to fetch member details data")
-        }
-        const userInfo = await userNameResponse.json()
-        
+    const clanResponse = await fetch(`https://api.petsimulatorclans.com/${clan}`)
+    if (!clanResponse.ok) {
+      console.log(" cannot fetch clan status ")
+      throw new Error("Failed to fetch clan status")
+    }
+    const clanStatus = await clanResponse.json()
+    const date_range = getTimeRange(inputValue.date)
+    const clanData = getOneDayClanData(date_range, clanStatus)
+    const minPointsList = clanData.minPointItem.data.PointContributions
+    let memberRecords = []
+    const maxPointsList = clanData.maxPointItem.data.PointContributions
+    const clanDailyPoints = clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
+    const battleName = clanData.maxPointItem.data.BattleID
+    const place = clanData.maxPointItem.data.Place
+    let userIds = []
+    membersList.forEach( m => {
+      const obj = Object.entries(m)
+      memberRecords.push(obj[0][1])
+    })
+    const memberAvg = (clanDailyPoints / (membersList.length)).toFixed(2)
+    for (var i=0; i<maxPointsList.length; i++) {
+      const max = Object.entries(maxPointsList[i])
+      const min = Object.entries(minPointsList[i])
+      if ( max[0][0] === 'UserID' && max[0][1] === min[0][1] && memberRecords.includes(max[0][1]) ) {
+        const daily_points = max[1][1] - min[1][1]
+        const userNameResponse = await fetch(`https://robloxproxy.andreybusinessacc6675.workers.dev/proxy/user/?userID=${max[0][1]}`)
+          if (!userNameResponse.ok) {
+            console.log(" cannot find username with id: " + member.UserID)
+            throw new Error("Failed to fetch member details data")
+          }
+        const userInfo = await userNameResponse.json()        
         var img = new Image()
-        img.src = `https://ihateproxies.andreybusinessacc6675.workers.dev/user/image/${member.UserID}`
+        img.src = `https://ihateproxies.andreybusinessacc6675.workers.dev/user/image/${max[0][1]}`
+        const meet = daily_points - inputValue.requirement >= 0
+        const diff = Math.abs(inputValue.requirement - daily_points)
+        const member = { UserId: max[0][1], totalPoint: max[1][1], score: daily_points, avatar: img.src, name: userInfo.name}
         if ( !meet ) {
           const exist = redMembers.some(item => item.id === member.id)
           if (!exist) {
-            redMembersL.push({ ...member, score: score, pass: meet, diff: diff, name: userInfo.name, avatar: img.src})
+            redMembersL.push({ ...member, pass: meet, diff: diff })
           }
         }
         const exist = scoreList.some(item => item.id === member.id)
         if (!exist) {
-          scoredMembers.push({ ...member, score: score, pass: meet, name: userInfo.name, avatar: img.src })
+          scoredMembers.push({ ...member, pass: meet, diff: diff })
         }
-      }
-      catch(error) {
-        const score = "No Data Found From petsimulatorclans"
-        const exist = scoreList.some(item => item.id === member.id)
-        const exist_not_meet = redMembersL.some(item => item.id === member.id)
-        if (!exist) {
-          scoredMembers.push({ ...member, score: score, pass: false, name: member.id})
-        }
-        if (!exist_not_meet) {
-          redMembersL.push({ ...member, score: score, pass: false, name: member.id})
-        }
-        console.log(error)
+        // const member = { UserId: max[0][1], totalPoint: max[1][1], dailyPoint: daily_points, avatar: img.src, name: userInfo.name}
+        userIds.push(max[0][1])
       }
     }
+    const memberMeetRequriemnts = scoredMembers.length - redMembersL.length
+    // const UserResponse = await fetch('https://users.roblox.com/v1/users', {
+    //   method: 'POST',
+    //   headers: {
+    //    'Content-Type': 'application/json;charset=utf-8',
+    //    'Access-Control-Allow-Origin':'*'
+    //   }, 
+    //   body: JSON.stringify({
+    //     "userIds": userIds,
+    //     "excludeBannedUsers": true
+    //   }) 
+    // })
+    // const UserNames = await UserResponse.json()
+    // console.log(UserNames)
     scoredMembers.sort((a, b) => b.score - a.score)
     redMembersL.sort((a, b) => b.score - a.score)
     setScoreList(scoredMembers)
     setredMembers(redMembersL)
+    setClanStatus({
+      name: inputValue.clanName,
+      battle: battleName,
+      place: place,
+      totalPoints: clanData.maxPointItem.data.Points,
+      dailyPoints: clanDailyPoints,
+      memberAvg: memberAvg,
+      memberMeetRequriemnts: memberMeetRequriemnts    
+    })
     setLoading(false)
   }
+
 
 
   const getTimeRange = (date) => {
@@ -156,6 +189,27 @@ function App() {
     return maxPoints - minPoints
   }
 
+  const getOneDayClanData = (date, data) => {
+    const start = new Date(date.start_res)
+    const end = new Date(date.end_res)
+    let per_data = []
+    data.forEach((d) => {
+      const d_date = new Date(d.timestamp)
+      const compare_s = d_date >= start
+      const compare_e = d_date < end
+      if (compare_s && compare_e) {
+        per_data.push(d)
+      }
+    })
+    const minPointItem = per_data.reduce((min, current) => {
+      return current.data.Points < min.data.Points ? current : min
+    })
+    const maxPointItem = per_data.reduce((max, current) => {
+      return current.data.Points > max.data.Points ? current : max
+    })
+    return { minPointItem, maxPointItem }
+  }
+
   const validateDate = (value) => {
     const regex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/
     if (!regex.test(value)) {
@@ -172,22 +226,14 @@ function App() {
   }
 
   const handleSearch = (filteredItems) => {
-    if (filteredItems.length !== 0) {
-      setFilteredList(filteredItems)
-    }
-    else {
-      setFilteredList([])
-    }
-
+    setFilteredList(filteredItems)
+    
   }
 
-  console.log("===========")
-  console.log(filteredList)
 
   return (
     <div className="App">
       <Card>
-      {/* <EnableColorOnDarkAppBar /> */}
       <SearchAppBar sx={{ display: 'flex'}}
         list={scoreList}
         onSearch={handleSearch}
@@ -232,6 +278,31 @@ function App() {
       </div>
       <div>
         { loading && <CircularProgress sx={{ margin: '20px', size: '10rem'}}/>}
+        { !loading && <Card style={{margin: '15px', backgroundColor: '#ededed'}}>
+          <Grid container spacing={2} alignItems='flex-end' margin='15px' fontFamily='Roboto, Helvetica, Arial, sans-serif'>
+              <Grid item xs={6} fontWeight='bold'>
+                {clanStatus.name.toUpperCase()}
+              </Grid>
+              <Grid item xs={6}>
+                {clanStatus.battle}
+              </Grid>
+              <Grid item xs={6} fontWeight='bold'>
+              &nbsp;# {clanStatus.place}&nbsp;
+              </Grid>
+              <Grid item xs={6}>
+                Total: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.totalPoints}&nbsp;&nbsp;</span>
+              </Grid>
+              <Grid item xs={6}>
+                Daily: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.dailyPoints}&nbsp;&nbsp;</span>
+              </Grid>
+              <Grid item xs={6}>
+                Member Avg: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.memberAvg}&nbsp;&nbsp;</span>
+              </Grid>
+              <Grid item xs={6}>
+                Meet Daily Req: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.memberMeetRequriemnts}&nbsp;&nbsp;</span>
+              </Grid>
+              </Grid>
+          </Card>}
         { filteredList.length !== 0 && filteredList.length !== scoreList.length && filteredList.map((member, i) => (
           <React.Fragment key={i}>
           <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: "#b0e0e6"}}>
@@ -247,10 +318,11 @@ function App() {
               <span style={{display: 'flex'}}>
               <span><Avatar src={star} style={{ width: '16px', height: '16px'}} key={i}/></span>
               <span>&nbsp;{member.score}</span>
+              <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+              <span style={{ backgroundColor: member.pass ? "#eee8aa" : "pink", borderRadius: '10px'}}>&nbsp;{member.diff}&nbsp;</span>
               </span>
              }
              />
-             {/* <Divider /> */}
           </ListItem>
           {(scoreList.length-16===i) && <Divider>BOTTOM 15 MEMBERS</Divider>}
           </React.Fragment>

@@ -75,8 +75,6 @@ export default function SearchAppBar( { list, onSearch } ) {
     setMobileMoreAnchorEl(null);
   };
 
-  console.log(search)
-
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
