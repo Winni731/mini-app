@@ -1,18 +1,22 @@
 {
   "files": {
-    "main.js": "/mini-app/static/js/main.5188bf5b.js",
+    "main.js": "/mini-app/static/js/main.2a5d8b45.js",
     "static/js/488.5e5a9149.chunk.js": "/mini-app/static/js/488.5e5a9149.chunk.js",
+    "static/media/player.png": "/mini-app/static/media/player.bcaeb321e3570ed40abb.png",
     "static/media/icon_medal_emerald_old.png": "/mini-app/static/media/icon_medal_emerald_old.057f061ead7f51a01b3d.png",
     "static/media/icon_medal_bronze.png": "/mini-app/static/media/icon_medal_bronze.bd1e3253d6a354e63fb3.png",
     "static/media/icon_medal_gold.png": "/mini-app/static/media/icon_medal_gold.450b8100fdf9a70e98e0.png",
     "static/media/cry.png": "/mini-app/static/media/cry.38790c15ab6bc481048c.png",
+    "static/media/star_champion.png": "/mini-app/static/media/star_champion.a368308af8e39263532b.png",
     "static/media/gold_star_1_outline.png": "/mini-app/static/media/gold_star_1_outline.75193bfda3b82ad1b3c6.png",
+    "static/media/sad.jpg": "/mini-app/static/media/sad.1686fdd0566ef5367e30.jpg",
+    "static/media/clans.webp": "/mini-app/static/media/clans.f5aa359051ae5b831f36.webp",
     "static/media/0FCL.webp": "/mini-app/static/media/0FCL.95bca393e78d588a6f7b.webp",
     "index.html": "/mini-app/index.html",
-    "main.5188bf5b.js.map": "/mini-app/static/js/main.5188bf5b.js.map",
+    "main.2a5d8b45.js.map": "/mini-app/static/js/main.2a5d8b45.js.map",
     "488.5e5a9149.chunk.js.map": "/mini-app/static/js/488.5e5a9149.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.5188bf5b.js"
+    "static/js/main.2a5d8b45.js"
   ]
 }
