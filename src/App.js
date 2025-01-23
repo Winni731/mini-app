@@ -14,6 +14,11 @@ import Card from '@mui/material/Card';
 import SearchAppBar from './SearchBar';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
+import happy from './happy.jpg'
+import sad from './sad.jpg'
+import champion from './star_champion.png'
+import player from './player.png'
+import clans from './clans.webp'
 
 function App() {
   const [inputValue, setInputValue] = useState({
@@ -278,41 +283,87 @@ function App() {
       </div>
       <div>
         { loading && <CircularProgress sx={{ margin: '20px', size: '10rem'}}/>}
-        { !loading && <Card style={{margin: '15px', backgroundColor: '#ededed'}}>
+        { clanStatus.name && <Card style={{margin: '15px', backgroundColor: '#ededed'}}>
           <Grid container spacing={2} alignItems='flex-end' margin='15px' fontFamily='Roboto, Helvetica, Arial, sans-serif'>
+              <div style={{padding: '12px'}}>
+              <Grid item xs={6}>
+                <Avatar src={clans} style={{ width: '36px', height: '36px'}}/>
+                </Grid>
+              </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '21px'}}>           
+                <Grid item xs={6} fontWeight='bold' textAlign='center'>
+                  {clanStatus.name.toUpperCase()}
+                </Grid>
+              </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '10px'}}>
+              <Grid item xs={6}>
+                  <span style={{ fontStyle: 'italic', textAlign:'center'}}>{clanStatus.battle}</span>
+                </Grid>   
               <Grid item xs={6} fontWeight='bold'>
-                {clanStatus.name.toUpperCase()}
+              <span style={{display: 'flex'}}>
+              &nbsp;
+              <span><Avatar src={champion} style={{ width: '22px', height: '22px'}}/></span>
+              <span>#&nbsp;{clanStatus.place}&nbsp;</span>
+              </span>
               </Grid>
+                </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '12px'}}>
+                <Grid item xs={6}>
+                  <span style={{ fontStyle: 'italic', textAlign:'center'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total</span>
+                </Grid>  
+                <Grid item xs={6}>
+                  <span style={{display: 'flex'}}>
+                  <span><Avatar src={star} style={{ width: '16px', height: '16px'}}/></span>
+                  <span>&nbsp;{clanStatus.totalPoints}&nbsp;</span>
+                  </span> 
+              </Grid> 
+              </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '12px'}}>
+                <Grid item xs={6}>
+                <span style={{ fontStyle: 'italic', textAlign:'center'}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Daily</span>
+                </Grid>
               <Grid item xs={6}>
-                {clanStatus.battle}
+              <span style={{display: 'flex'}}>
+              <span><Avatar src={star} style={{ width: '16px', height: '16px'}}/></span>
+              <span>&nbsp;{clanStatus.dailyPoints}&nbsp;</span>
+              </span>
               </Grid>
-              <Grid item xs={6} fontWeight='bold'>
-              &nbsp;# {clanStatus.place}&nbsp;
-              </Grid>
+              </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '12px'}}>
               <Grid item xs={6}>
-                Total: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.totalPoints}&nbsp;&nbsp;</span>
+                <span style={{ fontStyle: 'italic', textAlign:'center'}}>&nbsp;Member Avg</span>
+                </Grid>
+                <Grid item xs={6}>
+              <span style={{display: 'flex'}}>
+              <span><Avatar src={star} style={{ width: '16px', height: '16px'}}/></span>
+              <span>&nbsp;{clanStatus.memberAvg}&nbsp;&nbsp;</span>
+              &nbsp;&nbsp;
+              </span>
               </Grid>
+              </div>
+              <div style={{ backgroundColor: "#b0e0e6", borderRadius: '10px', padding: '12px'}}>
               <Grid item xs={6}>
-                Daily: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.dailyPoints}&nbsp;&nbsp;</span>
-              </Grid>
+                <span style={{ fontStyle: 'italic', textAlign:'center'}}>Meet Daily Req</span>
+                </Grid>
               <Grid item xs={6}>
-                Member Avg: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.memberAvg}&nbsp;&nbsp;</span>
+                <span style={{display: 'flex'}}>
+              <span><Avatar src={player} style={{ width: '16px', height: '16px'}}/></span>
+              <span><Avatar src={player} style={{ width: '16px', height: '16px'}}/></span>
+                <span>&nbsp;&nbsp;{clanStatus.memberMeetRequriemnts}&nbsp;&nbsp;</span>
+                </span>
               </Grid>
-              <Grid item xs={6}>
-                Meet Daily Req: <span style={{ backgroundColor: "#eee8aa", borderRadius: '10px'}}>&nbsp;&nbsp;{clanStatus.memberMeetRequriemnts}&nbsp;&nbsp;</span>
-              </Grid>
+              </div>
               </Grid>
           </Card>}
         { filteredList.length !== 0 && filteredList.length !== scoreList.length && filteredList.map((member, i) => (
           <React.Fragment key={i}>
           <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: "#b0e0e6"}}>
-             <Avatar src={member.avatar} />
+             <Avatar src={member.avatar} style={{marginTop: '10px', marginLeft: '30px'}}/>
              <ListItemText 
-             primary={<span style={{display: 'flex'}}>
+             primary={<span style={{display: 'flex', margin: '5px'}}>
              <span>{member.name}&nbsp;</span>
-             { i===0 && <span><Avatar src={first} style={{ width: '25px', height: '25px'}} key={i}/></span>}
-             { i===1 && <span><Avatar src={second} style={{ width: '25px', height: '25px'}} key={i}/></span>}
-             { i===2 && <span><Avatar src={third} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { member.pass && <span><Avatar src={happy} style={{ width: '25px', height: '25px'}} key={i}/></span>}
+             { !member.pass && <span><Avatar src={sad} style={{ width: '25px', height: '25px'}} key={i}/></span>}
              </span>}
              secondary={
               <span style={{display: 'flex'}}>
@@ -324,7 +375,7 @@ function App() {
              }
              />
           </ListItem>
-          {(scoreList.length-16===i) && <Divider>BOTTOM 15 MEMBERS</Divider>}
+          {/* {(scoreList.length-16===i) && <Divider>BOTTOM 15 MEMBERS</Divider>} */}
           </React.Fragment>
         ))}
         <List sx={{ bgcolor: 'background.paper'}}>
@@ -332,16 +383,17 @@ function App() {
           <React.Fragment key={i}>
           <ListItem alignItems="flex-start" key={`key-` + i} style={{ margin: '5px', backgroundColor: member.pass ? "#ededed" : "pink"}}>
              <h4>#{i+1}&nbsp;</h4>
-             <Avatar src={member.avatar} />
+             <Avatar src={member.avatar} style={{marginTop: '5px'}}/>
              <ListItemText 
              primary={<span style={{display: 'flex'}}>
-             <span>{member.name}&nbsp;</span>
+             <span>&nbsp;{member.name}&nbsp;</span>
              { i===0 && <span><Avatar src={first} style={{ width: '25px', height: '25px'}} key={i}/></span>}
              { i===1 && <span><Avatar src={second} style={{ width: '25px', height: '25px'}} key={i}/></span>}
              { i===2 && <span><Avatar src={third} style={{ width: '25px', height: '25px'}} key={i}/></span>}
              </span>}
              secondary={
               <span style={{display: 'flex'}}>
+                &nbsp;&nbsp;
               <span><Avatar src={star} style={{ width: '16px', height: '16px'}} key={i}/></span>
               <span>&nbsp;{member.score}</span>
               </span>
