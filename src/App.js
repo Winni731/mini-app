@@ -88,10 +88,24 @@ function App() {
     const clanStatus = await clanResponse.json()
     const date_range = getTimeRange(inputValue.date)
     const clanData = getOneDayClanData(date_range, clanStatus)
-    const minPointsList = clanData.minPointItem.data.PointContributions
+    console.log(clanData)
+    console.log(date_range)
+    let minPointsList
     let memberRecords = []
     const maxPointsList = clanData.maxPointItem.data.PointContributions
-    const clanDailyPoints = clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
+    if (date_range.search_date === '2025-01-25') {
+      const start_points = []
+      maxPointsList.forEach( m => {
+        const m_start = { UserID: m.UserID, Points: 0}
+        start_points.push(m_start)
+      })
+      minPointsList = start_points
+    }
+    else {
+      minPointsList = clanData.minPointItem.data.PointContributions
+    }
+
+    const clanDailyPoints = date_range.search_date === '2025-01-25' ?  clanData.maxPointItem.data.Points : clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
     const battleName = clanData.maxPointItem.data.BattleID
     const place = clanData.maxPointItem.data.Place
     let userIds = []
@@ -100,6 +114,9 @@ function App() {
       memberRecords.push(obj[0][1])
     })
     const memberAvg = (clanDailyPoints / (membersList.length)).toFixed(2)
+
+    console.log(maxPointsList)
+
     for (var i=0; i<maxPointsList.length; i++) {
       const max = Object.entries(maxPointsList[i])
       const min = Object.entries(minPointsList[i])
@@ -174,7 +191,7 @@ function App() {
     const end = moment.tz(search_date, timeZone).endOf('day')
     const start_res = start.utc()
     const end_res = end.utc()
-    return { start_res, end_res }
+    return { start_res, end_res, search_date }
   }
 
   const getOneDayData = (date, data) => {
