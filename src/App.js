@@ -88,34 +88,42 @@ function App() {
     const clanStatus = await clanResponse.json()
     const date_range = getTimeRange(inputValue.date)
     const clanData = getOneDayClanData(date_range, clanStatus)
-    console.log(clanData)
-    console.log(date_range)
-    let minPointsList
+    let tempPointsList1
     let memberRecords = []
-    const maxPointsList = clanData.maxPointItem.data.PointContributions
+    membersList.forEach( m => {
+      const obj = Object.entries(m)
+      memberRecords.push(obj[0][1])
+    })
+    const tempPointsList = clanData.maxPointItem.data.PointContributions
+
+    const maxPointsList = tempPointsList.filter( m => memberRecords.includes(m.UserID))
     if (date_range.search_date === '2025-01-25') {
       const start_points = []
       maxPointsList.forEach( m => {
         const m_start = { UserID: m.UserID, Points: 0}
         start_points.push(m_start)
       })
-      minPointsList = start_points
+      tempPointsList1 = start_points
     }
     else {
-      minPointsList = clanData.minPointItem.data.PointContributions
+      tempPointsList1 = clanData.minPointItem.data.PointContributions
     }
+
+    const minPointsList = tempPointsList1.filter( m => memberRecords.includes(m.UserID))
+
+    maxPointsList.forEach( (m, index) => {
+      if (!minPointsList[index]) {
+        const new_m = {UserID: m.UserID, Points: 0}
+        // console.log(new_m + " new created")
+        minPointsList.push(new_m)       
+      }
+    })
 
     const clanDailyPoints = date_range.search_date === '2025-01-25' ?  clanData.maxPointItem.data.Points : clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
     const battleName = clanData.maxPointItem.data.BattleID
     const place = clanData.maxPointItem.data.Place
     let userIds = []
-    membersList.forEach( m => {
-      const obj = Object.entries(m)
-      memberRecords.push(obj[0][1])
-    })
     const memberAvg = (clanDailyPoints / (membersList.length)).toFixed(2)
-
-    console.log(maxPointsList)
 
     for (var i=0; i<maxPointsList.length; i++) {
       const max = Object.entries(maxPointsList[i])
