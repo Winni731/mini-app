@@ -97,7 +97,7 @@ function App() {
     const tempPointsList = clanData.maxPointItem.data.PointContributions
 
     const maxPointsList = tempPointsList.filter( m => memberRecords.includes(m.UserID))
-    if (date_range.search_date === '2025-01-25') {
+    if (date_range.search_date === '2025-02-08') {
       const start_points = []
       maxPointsList.forEach( m => {
         const m_start = { UserID: m.UserID, Points: 0}
