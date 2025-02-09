@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.js": "/mini-app/static/js/main.67ae8c7a.js",
+    "main.js": "/mini-app/static/js/main.30816285.js",
     "static/js/488.5e5a9149.chunk.js": "/mini-app/static/js/488.5e5a9149.chunk.js",
     "static/media/player.png": "/mini-app/static/media/player.bcaeb321e3570ed40abb.png",
     "static/media/icon_medal_emerald_old.png": "/mini-app/static/media/icon_medal_emerald_old.057f061ead7f51a01b3d.png",
@@ -13,10 +13,10 @@
     "static/media/clans.webp": "/mini-app/static/media/clans.f5aa359051ae5b831f36.webp",
     "static/media/0FCL.webp": "/mini-app/static/media/0FCL.95bca393e78d588a6f7b.webp",
     "index.html": "/mini-app/index.html",
-    "main.67ae8c7a.js.map": "/mini-app/static/js/main.67ae8c7a.js.map",
+    "main.30816285.js.map": "/mini-app/static/js/main.30816285.js.map",
     "488.5e5a9149.chunk.js.map": "/mini-app/static/js/488.5e5a9149.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.67ae8c7a.js"
+    "static/js/main.30816285.js"
   ]
 }
