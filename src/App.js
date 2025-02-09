@@ -77,10 +77,10 @@ function App() {
       throw new Error("Failed to fetch members")
     }
     const clanInfo = await membersResponse.json()
-    const membersList = clanInfo.data.Members
+    // const membersList = clanInfo.data.Members
     let scoredMembers = []
     let redMembersL = []
-    const clanResponse = await fetch(`https://api.petsimulatorclans.com/${clan}`)
+    const clanResponse = await fetch(`https://api.petsimulatorclans.com/clan?clan=${clan}`)
     if (!clanResponse.ok) {
       console.log(" cannot fetch clan status ")
       throw new Error("Failed to fetch clan status")
@@ -88,15 +88,28 @@ function App() {
     const clanStatus = await clanResponse.json()
     const date_range = getTimeRange(inputValue.date)
     const clanData = getOneDayClanData(date_range, clanStatus)
+    console.log(" check clan Data: ")
+    console.log(clanData)
     let tempPointsList1
+    const clanNamesResponse = await fetch(`https://api.petsimulatorclans.com/usernames?clan=${clan}`)
+    if (!clanNamesResponse.ok) {
+      console.log(" cannot fetch clan names ")
+      throw new Error("Failed to fetch clan names")
+    }
+    const membersList = await clanNamesResponse.json()
     let memberRecords = []
     membersList.forEach( m => {
       const obj = Object.entries(m)
       memberRecords.push(obj[0][1])
     })
+
     const tempPointsList = clanData.maxPointItem.data.PointContributions
 
+    console.log(memberRecords)
+    console.log(tempPointsList)
+
     const maxPointsList = tempPointsList.filter( m => memberRecords.includes(m.UserID))
+    console.log(maxPointsList)
     if (date_range.search_date === '2025-02-08') {
       const start_points = []
       maxPointsList.forEach( m => {
@@ -114,33 +127,37 @@ function App() {
     maxPointsList.forEach( (m, index) => {
       if (!minPointsList[index]) {
         const new_m = {UserID: m.UserID, Points: 0}
-        // console.log(new_m + " new created")
         minPointsList.push(new_m)       
       }
     })
 
-    const clanDailyPoints = date_range.search_date === '2025-01-25' ?  clanData.maxPointItem.data.Points : clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
+    const clanDailyPoints = date_range.search_date === '2025-02-08' ?  clanData.maxPointItem.data.Points : clanData.maxPointItem.data.Points - clanData.minPointItem.data.Points
     const battleName = clanData.maxPointItem.data.BattleID
     const place = clanData.maxPointItem.data.Place
     let userIds = []
-    const memberAvg = (clanDailyPoints / (membersList.length)).toFixed(2)
+    const memberAvg = (clanDailyPoints / (memberRecords.length)).toFixed(2)
+
+    console.log(" max point lists")
+    console.log(maxPointsList)
 
     for (var i=0; i<maxPointsList.length; i++) {
       const max = Object.entries(maxPointsList[i])
       const min = Object.entries(minPointsList[i])
       if ( max[0][0] === 'UserID' && max[0][1] === min[0][1] && memberRecords.includes(max[0][1]) ) {
         const daily_points = max[1][1] - min[1][1]
-        const userNameResponse = await fetch(`https://robloxproxy.andreybusinessacc6675.workers.dev/proxy/user/?userID=${max[0][1]}`)
-          if (!userNameResponse.ok) {
-            console.log(" cannot find username with id: " + member.UserID)
-            throw new Error("Failed to fetch member details data")
-          }
-        const userInfo = await userNameResponse.json()        
+        // const userNameResponse = await fetch(`https://api.petsimulatorclans.com/username?userId=${max[0][1]}`)
+        //   if (!userNameResponse.ok) {
+        //     console.log(" cannot find username with id: " + member.UserID)
+        //     throw new Error("Failed to fetch member details data")
+        //   }
+        // const userInfo = await userNameResponse.json()        
+        const userName = getUserName(membersList, max[0][1])
+        console.log(userName)
         var img = new Image()
-        img.src = `https://ihateproxies.andreybusinessacc6675.workers.dev/user/image/${max[0][1]}`
+        img.src = `https://api.petsimulatorclans.com/image/user?userId=${max[0][1]}`
         const meet = daily_points - inputValue.requirement >= 0
         const diff = Math.abs(inputValue.requirement - daily_points)
-        const member = { UserId: max[0][1], totalPoint: max[1][1], score: daily_points, avatar: img.src, name: userInfo.name}
+        const member = { UserId: max[0][1], totalPoint: max[1][1], score: daily_points, avatar: img.src, name: userName}
         if ( !meet ) {
           const exist = redMembers.some(item => item.id === member.id)
           if (!exist) {
@@ -185,7 +202,11 @@ function App() {
     setLoading(false)
   }
 
-
+  const getUserName = (clanNames, userId) => {
+    const user = clanNames.filter( m => m.id === userId)
+    console.log(user)
+    return user[0].name
+  }
 
   const getTimeRange = (date) => {
     const timeZone = 'America/New_York'
