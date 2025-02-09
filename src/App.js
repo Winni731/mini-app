@@ -88,8 +88,8 @@ function App() {
     const clanStatus = await clanResponse.json()
     const date_range = getTimeRange(inputValue.date)
     const clanData = getOneDayClanData(date_range, clanStatus)
-    console.log(" check clan Data: ")
-    console.log(clanData)
+    // console.log(" check clan Data: ")
+    // console.log(clanData)
     let tempPointsList1
     const clanNamesResponse = await fetch(`https://api.petsimulatorclans.com/usernames?clan=${clan}`)
     if (!clanNamesResponse.ok) {
@@ -105,11 +105,11 @@ function App() {
 
     const tempPointsList = clanData.maxPointItem.data.PointContributions
 
-    console.log(memberRecords)
-    console.log(tempPointsList)
+    // console.log(memberRecords)
+    // console.log(tempPointsList)
 
     const maxPointsList = tempPointsList.filter( m => memberRecords.includes(m.UserID))
-    console.log(maxPointsList)
+    // console.log(maxPointsList)
     if (date_range.search_date === '2025-02-08') {
       const start_points = []
       maxPointsList.forEach( m => {
@@ -137,8 +137,8 @@ function App() {
     let userIds = []
     const memberAvg = (clanDailyPoints / (memberRecords.length)).toFixed(2)
 
-    console.log(" max point lists")
-    console.log(maxPointsList)
+    // console.log(" max point lists")
+    // console.log(maxPointsList)
 
     for (var i=0; i<maxPointsList.length; i++) {
       const max = Object.entries(maxPointsList[i])
@@ -152,7 +152,6 @@ function App() {
         //   }
         // const userInfo = await userNameResponse.json()        
         const userName = getUserName(membersList, max[0][1])
-        console.log(userName)
         var img = new Image()
         img.src = `https://api.petsimulatorclans.com/image/user?userId=${max[0][1]}`
         const meet = daily_points - inputValue.requirement >= 0
@@ -204,7 +203,6 @@ function App() {
 
   const getUserName = (clanNames, userId) => {
     const user = clanNames.filter( m => m.id === userId)
-    console.log(user)
     return user[0].name
   }
 
